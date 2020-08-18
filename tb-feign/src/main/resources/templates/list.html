@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<link rel="stylesheet" th:href="@{/js/bootstrap3/css/bootstrap.css}">
+<link rel="stylesheet" th:href="@{/js/bootstrap-table/bootstrap-table.css}">
+<link rel="stylesheet"  th:href="@{/js/bootstrap-datetimepicker/css/bootstrap-datetimepicker.css}">
+<script th:src="@{/js/jquery-1.11.3.min.js}"></script>
+<script th:src="@{/js/bootstrap3/js/bootstrap.js}"></script>
+<script th:src="@{/js/bootstrap-table/bootstrap-table.js}"></script>
+<script th:src="@{/js/bootstrap-table/locale/bootstrap-table-zh-CN.js}"></script>
+<script th:src="@{/js/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js}"></script>
+<script th:src="@{/js/bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script th:src="@{/js/bootstrap-bootbox/bootbox.all.min.js}"></script>
+<body>
+    <div id="toolbar">
+        <button onclick="saveUser()" class="btn btn-info  glyphicon glyphicon-plus">新增</button>
+    </div>
+    <div id="userTable"></div>
+</body>
+<script>
+    $(function(){
+        initUserList();
+    })
+    function editUser(id){
+        bootbox.dialog({
+            title: '修改用户',
+            message:createAddContent('../editUserPage?userId='+id),
+            closeButton:true,
+            size: 'large',
+            buttons:{
+                cancel: {
+                    label: "取消",
+                    className: '保存',
+                    callback: function(){
+
+                    }
+                },
+                ok: {
+                    label: "修改",
+                    className: 'btn-info',
+                    callback: function(){
+                        $.ajax({
+                            url:'../updateUser',
+                            type:'post',
+                            data:$("#myForm").serialize(),
+                            dataType:'json',
+                            success:function(data){
+                                $("#userTable").bootstrapTable('refresh')
+                            }
+                        });
+                    }
+                }
+            }
+        })
+    }
+    function deleteUser(id){
+        $.post('../deleteUser/'+id,{},function(data){
+            $("#userTable").bootstrapTable('refresh')
+        })
+    }
+    function saveUser(){
+
+        bootbox.dialog({
+            title: '新增用户',
+            message:createAddContent('../saveUserPage1'),
+            closeButton:true,
+            size: 'large',
+            buttons:{
+                cancel: {
+                    label: "取消",
+                    className: '保存',
+                    callback: function(){
+
+                    }
+                },
+                ok: {
+                    label: "新增",
+                    className: 'btn-info',
+                    callback: function(){
+                        $.ajax({
+                            url:'../adduser',
+                            type:'post',
+                            data:$("#myForm").serialize(),
+                            dataType:'json',
+                            success:function(data){
+                                $("#userTable").bootstrapTable('refresh')
+                            }
+                        });
+                    }
+                }
+            }
+        })
+    }
+    function initUserList(){
+        $("#userTable").bootstrapTable({
+            url:'../findPeopleList',
+            method:'post',
+            toolbar:'#toobar',
+            clickToSelect: true, //是否启用点击选中行
+            columns:[
+                {checkbox:true},
+                {field:'id',title:'ID',align:'center',width:150},
+                {field:'name',title:'性别',align:'center',width:150},
+                {field:'age',title:'名字',align:'center',width:150},
+                {field:'typeName',title:'类型',width:150,align:'center'},
+                {field:'cz',title:'操作',width:150,formatter:function(value,row,index){
+
+                        return '<a href="javascript:deleteUser('+row.id+')">删除</a> | <a href="javascript:editUser('+row.id+')">修改</a>';
+                    }}
+            ]
+        })
+    }
+    var res;
+    function createAddContent(url){
+        $.ajax({
+            url:url,
+            async:false,
+            success:function(data){
+                res = data;
+            }
+        });
+        return res;
+    }
+
+</script>
+</html>
